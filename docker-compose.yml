@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # --- Tầng Dữ liệu: SQL Server 2022 ---
+  sqlserver:
+    build: ./database
+    container_name: wanderly-db
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=MinhNhatHuit2026!
+    # THÊM VOLUME Ở ĐÂY
+    volumes:
+      - wanderly_db_data:/var/opt/mssql # Ánh xạ dữ liệu ra ngoài volume
+    networks:
+      - wanderly-net
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $${MSSQL_SA_PASSWORD} -Q 'SELECT 1' -C"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # --- Tầng Ứng dụng: Node.js Backend ---
+  wanderly-app:
+    build: .
+    container_name: wanderly-main
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - DB_SERVER=sqlserver
+      - DB_USER=sa
+      - DB_PASS=MinhNhatHuit2026!
+      - DB_NAME=Wanderly
+      - NODE_ENV=production
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: always
+    networks:
+      - wanderly-net
+
+# KHAI BÁO VOLUME ĐỂ DOCKER QUẢN LÝ
+volumes:
+  wanderly_db_data:
+
+networks:
+  wanderly-net:
+    driver: bridge

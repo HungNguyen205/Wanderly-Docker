@@ -1,0 +1,449 @@
+/* Hero Section with Simple Slider (Fade Effect) */
+.hero {
+    margin-top: 80px;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FF6B6B 0%, #FFAB91 50%, #7FFFD4 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.slider-container {
+    width: 1197px;
+    height: 700px;
+    position: relative;
+    overflow: hidden;
+    /* Giữ nguyên kích thước container */
+}
+
+.slider-stage {
+    width: 100%;
+    height: 600px;
+    /* Chiều cao ảnh */
+    position: relative;
+}
+
+/* --- NEW SIMPLE SLIDE IMAGE --- */
+.simple-slide-image {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 1;
+    /* Hiệu ứng mờ/fade */
+    transition: opacity 0.9s ease;
+}
+
+.simple-slide-image.fading-out {
+    opacity: 0;
+}
+
+/* ----- Overlay text ----- (Giữ nguyên) */
+.text-overlay {
+    position: absolute;
+    bottom: 100px;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 40px;
+    z-index: 102;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.text-overlay.hiding {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.slide-title {
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+    margin: 0 0 8px 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.slide-description {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    line-height: 1.4;
+    margin: 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Controls & arrows --- (Giữ nguyên) */
+.controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 15px;
+    z-index: 103;
+}
+
+.control-btn {
+    width: 65px;
+    height: 65px;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: white;
+    font-size: 26px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.control-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+    box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
+    border-color: white;
+}
+
+/* Navigation arrows */
+.nav-arrow {
+    position: absolute;
+    top: 300px;
+    transform: translateY(-50%);
+    width: 70px;
+    height: 70px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: white;
+    z-index: 102;
+    opacity: 0.8;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.nav-arrow:before {
+    content: "";
+    display: block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    transition: transform 0.2s ease;
+}
+
+.nav-arrow.prev:before {
+    border-width: 13px 15px 13px 0;
+    border-color: transparent white transparent transparent;
+    margin-right: 2px;
+}
+
+.nav-arrow.next:before {
+    border-width: 13px 0 13px 15px;
+    border-color: transparent transparent transparent white;
+    margin-left: 2px;
+}
+
+.nav-arrow:hover:not(:disabled) {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
+    border-color: white;
+}
+
+.nav-arrow.prev {
+    left: 40px;
+}
+
+.nav-arrow.next {
+    right: 40px;
+}
+
+/* --- Play / pause icon --- (Giữ nguyên) */
+.play-pause-btn {
+    position: relative;
+}
+
+.play-pause-btn::before {
+    content: "";
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    opacity: 0;
+    z-index: -1;
+    animation: rotate 1.5s linear infinite;
+}
+
+.play-pause-btn:not(.paused)::before {
+    opacity: 1;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.play-icon,
+.pause-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: opacity .2s ease, transform .2s ease;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.play-icon:before {
+    content: "";
+    border-style: solid;
+    border-width: 11px 0 11px 18px;
+    border-color: transparent transparent transparent white;
+    margin-left: 4px;
+}
+
+.pause-icon:before {
+    content: "";
+    display: block;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(to right, white 35%, transparent 35%, transparent 65%, white 65%);
+}
+
+.play-icon {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(.8);
+}
+
+.pause-icon {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.play-pause-btn.paused .play-icon {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.play-pause-btn.paused .pause-icon {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(.8);
+}
+
+/* --- dots, thumbnails, progress bar --- (Giữ nguyên) */
+.dots {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+    z-index: 103;
+}
+
+.dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .3);
+    backdrop-filter: blur(5px);
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+.dot:hover {
+    background: rgba(255, 255, 255, .6);
+    transform: scale(1.3);
+}
+
+.dot.active {
+    background: rgba(255, 255, 255, .9);
+    transform: scale(1.3);
+    box-shadow: 0 0 15px rgba(255, 255, 255, .8);
+}
+
+.thumbnails-container {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+    z-index: 104;
+}
+
+.thumbnail {
+    width: 120px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    border: 3px solid transparent;
+    position: relative;
+    transition: all .3s ease;
+}
+
+.thumbnail::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, .3);
+    transition: all .3s ease;
+}
+
+.thumbnail:hover::after {
+    background: rgba(0, 0, 0, .1);
+}
+
+.thumbnail.active {
+    border-color: white;
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, .3);
+}
+
+.thumbnail.active::after {
+    background: transparent;
+}
+
+.progress-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: rgba(0, 0, 0, .2);
+    z-index: 101;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #FF6B6B, #FFAB91, #7FFFD4);
+    width: 0;
+    animation: none;
+    box-shadow: 0 0 10px rgba(255, 107, 107, .5);
+}
+
+.progress-bar.active {
+    animation: fillProgress 3.5s linear forwards;
+}
+
+@keyframes fillProgress {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+.progress-bar.reset {
+    animation: none;
+    width: 0;
+}
+
+/* --- mobile --- (Đã dọn dẹp các transform 3D) */
+@media (max-width:768px) {
+    .slider-container {
+        width: 95vw;
+        height: calc(47.5vw + 100px);
+    }
+
+    .slider-stage {
+        height: 47.5vw;
+    }
+
+    .text-overlay {
+        height: 100px;
+        padding: 0 20px;
+        bottom: 75px;
+    }
+
+    .slide-title {
+        font-size: 20px;
+        margin-bottom: 6px;
+    }
+
+    .slide-description {
+        font-size: 14px;
+        line-height: 1.3;
+    }
+
+    .nav-arrow {
+        width: 48px;
+        height: 48px;
+        top: min(calc(23.75vw), 300px);
+    }
+
+    .nav-arrow.prev {
+        left: 15px;
+    }
+
+    .nav-arrow.next {
+        right: 15px;
+    }
+
+    .control-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
+
+    .controls {
+        top: 15px;
+        right: 15px;
+        gap: 12px;
+    }
+
+    .dots {
+        top: 15px;
+        gap: 12px;
+    }
+
+    .dot {
+        width: 10px;
+        height: 10px;
+    }
+
+    .thumbnail {
+        width: 80px;
+        height: 53px;
+    }
+
+    .thumbnails-container {
+        gap: 10px;
+        bottom: 0;
+    }
+}

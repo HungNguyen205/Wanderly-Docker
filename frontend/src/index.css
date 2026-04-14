@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+/* Enable dark mode variant */
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary: #FF6B6B;
+  --color-mint: #7FFFD4;
+  --color-coral: #FFAB91;
+}
+
+.gradient-bg {
+  background: linear-gradient(-45deg, var(--color-primary), var(--color-coral), var(--color-mint));
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+.glass-card {
+  @apply bg-white/90 backdrop-blur-2xl border border-white/30 rounded-3xl shadow-2xl;
+}
+
+.btn-primary {
+  @apply w-full bg-linear-to-r from-[var(--color-primary)] to-[var(--color-mint)] text-white font-semibold py-3 rounded-xl transition-all duration-300 relative overflow-hidden cursor-pointer;
+}
+
+.btn-primary:hover {
+  @apply scale-[1.03] shadow-lg;
+}
+
+.btn-primary::before {
+  content: "";
+  @apply absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite];
+}
+
+.input-field {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)];
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes gradient {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
