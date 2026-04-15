@@ -322,15 +322,30 @@ docker ps
 ## BƯỚC 10: HƯỚNG DẪN XỬ LÝ LỖI THƯỜNG GẶP (TROUBLESHOOTING)
 
 Trong quá trình vận hành, nếu gặp sự cố, hãy thực hiện theo các bước sau:
-
+---
 ### 10.1. Lỗi không đăng nhập được (Incorrect Password)
 
-Nguyên nhân thường do mã băm mật khẩu bị lệch kiểu dữ liệu (NVARCHAR).
+**Nguyên nhân:** Mã băm mật khẩu bị lệch kiểu dữ liệu khi khởi tạo hoặc do xung đột kiểu dữ liệu chuỗi (NVARCHAR) giữa ứng dụng và SQL Server.
 
-**Cách sửa:** Chạy lệnh SQL trực tiếp để reset mật khẩu Admin:
+**Cách sửa:** Thực hiện Reset mật khẩu về mặc định (`123456`) bằng cách chạy lệnh SQL trực tiếp vào Container thông qua PowerShell:
+
+* **Dành cho Admin (`admin@wanderly.com`):**
 ```powershell
 docker exec -it wanderly-db /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P MinhNhatHuit2026! -Q "USE Wanderly; UPDATE Users SET PasswordHash = CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', CAST('123456' AS NVARCHAR(255))), 2) WHERE Email = 'admin@wanderly.com';" -C
 ```
+
+* **Dành cho Người dùng mẫu (`member@wanderly.com`):**
+```powershell
+docker exec -it wanderly-db /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P MinhNhatHuit2026! -Q "USE Wanderly; UPDATE Users SET PasswordHash = CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', CAST('123456' AS NVARCHAR(255))), 2) WHERE Email = 'member@wanderly.com';" -C
+```
+
+* **Dành cho Nhà cung cấp (`partner@wanderly.com`):**
+```powershell
+docker exec -it wanderly-db /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P MinhNhatHuit2026! -Q "USE Wanderly; UPDATE Users SET PasswordHash = CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', CAST('123456' AS NVARCHAR(255))), 2) WHERE Email = 'partner@wanderly.com';" -C
+```
+
+---
+
 
 ### 10.2. Lỗi Backend không kết nối được Database
 
