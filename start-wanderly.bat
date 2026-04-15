@@ -1,19 +1,18 @@
 @echo off
-title Wanderly System Starter
+title Wanderly System Starter - Build Mode
 color 0B
 echo ==========================================
-echo    DANG KHOI DONG HE THONG WANDERLY
+echo    DANG KHOI DONG VA REBUILD WANDERLY
 echo ==========================================
 echo.
 
-:: 1. Khoi chay Docker
-echo [+] Buoc 1: Dang kich hoat Docker Containers...
-docker-compose up -d
+:: 1. Khoi chay Docker voi tham so --build
+echo [+] Buoc 1: Dang build va kich hoat Containers...
+docker-compose up --build -d
 
-:: 2. Doi Database san sang (30 giay la con so an toan)
+:: 2. Doi Database san sang
 echo.
-echo [+] Buoc 2: Dang doi SQL Server khoi tao du lieu (30s)...
-echo     Ban hay di pha mot ly cafe nhe!
+echo [+] Buoc 2: Dang doi SQL Server khoi tao (30s)...
 timeout /t 30 /nobreak
 
 :: 3. Kiem tra trang thai
@@ -23,7 +22,7 @@ docker ps
 
 echo.
 echo ==========================================
-echo    MOI THU DA SAN SANG! 
+echo    MOI THU DA CAP NHAT MOI NHAT!
 echo    Truy cap: http://localhost:4000
 echo ==========================================
 pause
