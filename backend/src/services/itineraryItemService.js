@@ -3,20 +3,15 @@ const { sql, poolPromise } = require('../config/dbConfig');
 const normalizeTime = (t) => {
     if (!t) return null;
     if (typeof t !== "string") return null;
-
     if (t.length === 5) return t + ":00";
     if (t.length === 8) return t;
-    if (/^\d{2}:\d{2}:\d{2}\.\d{3}$/.test(t)) return t;
     return null;
 };
 
-// ===========================================
-// 1. CREATE (sp_ItineraryItems_Create)
-// ===========================================
+// 1. CREATE
 const createItineraryItem = async (data) => {
     try {
         const pool = await poolPromise;
-        
         const startTime = normalizeTime(data.startTime);
         const endTime = normalizeTime(data.endTime);
 
@@ -33,48 +28,24 @@ const createItineraryItem = async (data) => {
             .execute("sp_ItineraryItems_Create");
 
         const code = result.output.Result;
-
-        if (code === -1) {
-            return {
-                success: false,
-                code: 404,
-                message: "Itinerary not found."
-            };
-        }
-
         if (code === 1) {
-            const itineraryItemId = result.recordset[0]?.ItineraryItemId;
             return {
                 success: true,
                 code: 201,
-                data: { itineraryItemId },
-                message: "Itinerary item created successfully."
+                data: { itineraryItemId: result.recordset[0]?.ItineraryItemId },
+                message: "Activity added successfully."
             };
         }
-
-        return {
-            success: false,
-            code: 500,
-            message: "Database error during creation."
-        };
+        return { success: false, code: 400, message: "Failed to add activity." };
     } catch (error) {
-        console.error("[createItineraryItem] Error", error);
-        return {
-            success: false,
-            code: 500,
-            message: "System error.",
-            error: error.message
-        };
+        return { success: false, code: 500, message: "System error.", error: error.message };
     }
 };
 
-// ===========================================
-// 2. UPDATE (sp_ItineraryItems_Update)
-// ===========================================
+// 2. UPDATE
 const updateItineraryItem = async (itemId, data) => {
     try {
         const pool = await poolPromise;
-        
         const startTime = normalizeTime(data.startTime);
         const endTime = normalizeTime(data.endTime);
 
@@ -90,45 +61,15 @@ const updateItineraryItem = async (itemId, data) => {
             .output("Result", sql.Int)
             .execute("sp_ItineraryItems_Update");
 
-        const code = result.output.Result;
-
-        if (code === -1) {
-            return {
-                success: false,
-                code: 404,
-                message: "Itinerary item not found."
-            };
-        }
-
-        if (code === 1) {
-            const updatedItem = result.recordset[0] || null;
-            return {
-                success: true,
-                code: 200,
-                data: updatedItem,
-                message: "Itinerary item updated successfully."
-            };
-        }
-
-        return {
-            success: false,
-            code: 500,
-            message: "Database error during update."
-        };
+        return result.output.Result === 1 
+            ? { success: true, code: 200, message: "Updated successfully." }
+            : { success: false, code: 404, message: "Item not found." };
     } catch (error) {
-        console.error("[updateItineraryItem] Error", error);
-        return {
-            success: false,
-            code: 500,
-            message: "System error.",
-            error: error.message
-        };
+        return { success: false, code: 500, message: "System error." };
     }
 };
 
-// ===========================================
-// 3. DELETE (sp_ItineraryItems_Delete)
-// ===========================================
+// 3. DELETE
 const deleteItineraryItem = async (itemId) => {
     try {
         const pool = await poolPromise;
@@ -137,43 +78,12 @@ const deleteItineraryItem = async (itemId) => {
             .output("Result", sql.Int)
             .execute("sp_ItineraryItems_Delete");
 
-        const code = result.output.Result;
-
-        if (code === -1) {
-            return {
-                success: false,
-                code: 404,
-                message: "Itinerary item not found."
-            };
-        }
-
-        if (code === 1) {
-            return {
-                success: true,
-                code: 200,
-                message: "Itinerary item deleted successfully."
-            };
-        }
-
-        return {
-            success: false,
-            code: 500,
-            message: "Database error during deletion."
-        };
+        return result.output.Result === 1 
+            ? { success: true, code: 200, message: "Deleted successfully." }
+            : { success: false, code: 404, message: "Item not found." };
     } catch (error) {
-        console.error("[deleteItineraryItem] Error", error);
-        return {
-            success: false,
-            code: 500,
-            message: "System error.",
-            error: error.message
-        };
+        return { success: false, code: 500, message: "System error." };
     }
 };
 
-module.exports = {
-    createItineraryItem,
-    updateItineraryItem,
-    deleteItineraryItem
-};
-
+module.exports = { createItineraryItem, updateItineraryItem, deleteItineraryItem };
