@@ -426,3 +426,45 @@ Trong quá trình phát triển, việc xây dựng lại Image liên tục sẽ
 - **Lệnh dọn dẹp nhanh:** `docker system prune` (Xóa container dừng, mạng thừa, image không tên).
 - **Lệnh dọn dẹp Build Cache:** `docker builder prune` (Xóa bộ nhớ đệm của quá trình build).
 - **Lưu ý:** Tránh sử dụng flag `-a` nếu không muốn tải lại các Image gốc (Node, SQL Server) và tuyệt đối không dùng `--volumes` để bảo vệ dữ liệu người dùng.
+
+Chào Nhật! Để tránh tình trạng "lưu rồi mà không thấy" hoặc lỗi kết nối như nãy giờ, đây là **quy trình chuẩn 5 bước** dành cho dân chuyên nghiệp khi muốn cập nhật dữ liệu mồi (Seed Data) thông qua file `init.sql` trong môi trường Docker.
+
+Nhật có thể lưu quy trình này vào Sổ tay triển khai để sau này không bị "quên bài" nhé:
+
+---
+
+## 📋 QUY TRÌNH CHUẨN: Cập nhật dữ liệu qua file `init.sql`
+
+### Bước 1: Chuẩn bị mã SQL
+Dán vào cuối file `database/init.sql`. Hãy đảm bảo code SQL không bị lỗi cú pháp (thiếu dấu phẩy, sai tên bảng...).
+
+### Bước 2: Hủy dữ liệu cũ (Bắt buộc)
+Vì Docker dùng **Volume** để giữ lại dữ liệu, nên nếu chỉ tắt đi bật lại thì nó sẽ không đọc file `init.sql` mới. Cần chạy lệnh:
+```powershell
+docker-compose down -v
+```
+> **Giải thích:** Flag `-v` sẽ xóa sạch ổ cứng ảo chứa dữ liệu cũ. Đây là bước quan trọng nhất để ép SQL Server chạy lại file khởi tạo từ đầu.
+
+### Bước 3: Xây dựng và Khởi chạy lại
+Sử dụng file `.bat` hoặc gõ lệnh:
+```powershell
+docker-compose up --build -d
+```
+> **Lưu ý:** Lúc này Docker sẽ nén code mới, tạo lại database.
+
+### Bước 4: Giám sát Database
+Đừng vội mở web ngay! Gõ lệnh này để xem SQL Server đã nạp xong chưa:
+```powershell
+docker logs -f wanderly-db
+```
+* **Khi nào thì xong?** Khi thấy dòng chữ: `SQL Server: Da hoan tat quy trinh khoi tao!`. 
+* Lúc này nhấn `Ctrl + C` để thoát log.
+
+### Bước 5: Khởi động lại Backend (Nếu cần)
+Đôi khi Backend khởi động quá nhanh khi Database chưa kịp nạp xong dữ liệu, dẫn đến lỗi kết nối. Nếu vào web thấy trắng trơn hoặc báo lỗi, hãy resart Backend:
+```powershell
+docker restart wanderly-main
+```
+
+
+

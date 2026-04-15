@@ -5456,3 +5456,211 @@ INSERT INTO SpecialFeatures (Name, Description) VALUES
 ('Entrance Tickets', 'Includes entrance tickets to scheduled attractions.'),
 ('Lunch', 'Includes lunch.'),
 ('Travel Insurance', 'Guests are covered by insurance throughout the trip.');
+
+GO
+
+-- ==========================================================
+-- 1. BỔ SUNG NGƯỜI DÙNG (USERS)
+-- Mật khẩu mặc định cho tất cả: 123456
+-- ==========================================================
+INSERT INTO Users (FullName, Email, PasswordHash, RoleId, ProfilePictureUrl, Bio) VALUES
+(N'Lê Hoàng Minh Nhật', 'minhnhat@huit.edu.vn', CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', '123456'), 2), 2, 'https://i.pravatar.cc/150?u=nhat', N'Sinh viên HUIT - Người sáng lập Wanderly.'),
+(N'Nguyễn Văn A', 'vana@gmail.com', CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', '123456'), 2), 2, 'https://i.pravatar.cc/150?u=a', N'Đam mê du lịch bụi và chụp ảnh.'),
+(N'Trần Thị B', 'thib@gmail.com', CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', '123456'), 2), 2, 'https://i.pravatar.cc/150?u=b', N'Yêu biển và những chuyến đi xa.'),
+(N'Phạm Minh C', 'minhc@provider.com', CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', '123456'), 2), 3, 'https://i.pravatar.cc/150?u=c', N'Chủ chuỗi Homestay tại Đà Lạt.'),
+(N'Hoàng Gia D', 'giad@transport.com', CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', '123456'), 2), 3, 'https://i.pravatar.cc/150?u=d', N'Đơn vị vận tải cao cấp miền Nam.');
+
+-- ==========================================================
+-- 2. BỔ SUNG NHÀ CUNG CẤP (SERVICE PROVIDERS)
+-- ==========================================================
+DECLARE @UserIdC INT = (SELECT UserId FROM Users WHERE Email = 'minhc@provider.com');
+DECLARE @UserIdD INT = (SELECT UserId FROM Users WHERE Email = 'giad@transport.com');
+
+INSERT INTO ServiceProviders (OwnerUserId, CompanyName, ContactEmail, PhoneNumber, Address, IsVerified) VALUES
+(@UserIdC, N'Đà Lạt Mộng Mơ Homestay', 'contact@dalatdream.vn', '0901234567', N'12 Mai Anh Đào, Đà Lạt', 1),
+(@UserIdD, N'Phương Trang Futa Bus', 'hotline@futa.vn', '19006067', N'Lê Hồng Phong, Quận 5, TP.HCM', 1);
+
+-- ==========================================================
+-- 3. BỔ SUNG DỊCH VỤ (SERVICES)
+-- ==========================================================
+-- Lấy ID cần thiết
+DECLARE @CateAcc INT = (SELECT CategoryID FROM ServiceCategories WHERE ServiceTypeName = 'Accommodation');
+DECLARE @CateTrans INT = (SELECT CategoryID FROM ServiceCategories WHERE ServiceTypeName = 'Transport');
+DECLARE @CateAct INT = (SELECT CategoryID FROM ServiceCategories WHERE ServiceTypeName = 'Activity');
+DECLARE @ProvDalat INT = (SELECT ProviderId FROM ServiceProviders WHERE CompanyName = N'Đà Lạt Mộng Mơ Homestay');
+DECLARE @ProvFuta INT = (SELECT ProviderId FROM ServiceProviders WHERE CompanyName = N'Phương Trang Futa Bus');
+
+-- Dịch vụ 1: Khách sạn tại Đà Lạt (LocationId 5)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, Address, AverageRating) VALUES
+(@ProvDalat, 5, N'Pine Hill Homestay Dalat', N'Không gian yên tĩnh giữa rừng thông, view thung lũng cực đẹp.', @CateAcc, 'active', N'Triệu Việt Vương, P4, Đà Lạt', 4.8);
+DECLARE @SerId1 INT = SCOPE_IDENTITY();
+
+-- Dịch vụ 2: Xe khách SG - Đà Lạt
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, Address, AverageRating) VALUES
+(@ProvFuta, 5, N'Xe Limousine Giường Nằm VIP', N'Xe đời mới, massage, wifi, nước uống miễn phí.', @CateTrans, 'active', N'Bến xe Miền Đông', 4.5);
+DECLARE @SerId2 INT = SCOPE_IDENTITY();
+
+-- Dịch vụ 3: Tour lặn biển Nha Trang (LocationId 7)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, Address, AverageRating) VALUES
+(1, 7, N'Tour Lặn Ngắm San Hô Hòn Mun', N'Khám phá thế giới đại dương kỳ thú với huấn luyện viên chuyên nghiệp.', @CateAct, 'active', N'Cảng Cầu Đá, Nha Trang', 4.9);
+DECLARE @SerId3 INT = SCOPE_IDENTITY();
+
+-- ==========================================================
+-- 4. CHI TIẾT DỊCH VỤ (ACCOMMODATIONS / ACTIVITIES)
+-- ==========================================================
+INSERT INTO ServiceAccommodations (ServiceId, AccommodationType, StarRating, Amenities) VALUES
+(@SerId1, N'Homestay', 4, N'Wifi, BBQ, Kitchen, Balcony');
+
+INSERT INTO ServiceActivities (ServiceId, ActivityType, DurationHours, GuideLanguage) VALUES
+(@SerId3, N'Snorkeling', 4.5, N'Vietnamese, English');
+
+-- ==========================================================
+-- 5. HÌNH ẢNH DỊCH VỤ (SERVICE IMAGES) - Giúp giao diện đẹp
+-- ==========================================================
+INSERT INTO ServiceImages (ServiceId, ImageUrl, Caption, DisplayOrder) VALUES
+(@SerId1, 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688', N'Phòng ngủ ấm cúng', 1),
+(@SerId1, 'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e', N'View rừng thông', 2),
+(@SerId2, 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957', N'Nội thất xe sang trọng', 1),
+(@SerId3, 'https://images.unsplash.com/photo-1544551763-47a184117db7', N'Lặn ngắm san hô', 1);
+
+-- ==========================================================
+-- 6. BÀI ĐĂNG CỘNG ĐỒNG (POSTS)
+-- ==========================================================
+INSERT INTO Posts (UserId, Title, Content, ImageUrl, Status, PublishedAt) VALUES
+(@UserIdC, N'Kinh nghiệm săn mây Đà Lạt 0 đồng', N'Chào mọi người, hôm nay mình chia sẻ bí kíp săn mây ở đồi chè Cầu Đất cực kỳ chi tiết...', 'https://images.unsplash.com/photo-1583417319070-4a69db38a482', 'published', GETDATE()),
+(@UserIdD, N'Check-in Hội An mùa đèn lồng', N'Hội An tháng nào đẹp nhất? Chắc chắn là những ngày rằm...', 'https://images.unsplash.com/photo-1555436169-20e93ea9a7ff', 'published', GETDATE());
+
+-- ==========================================================
+-- 7. THIẾT LẬP CÓ SẴN (AVAILABILITIES) - Để có thể đặt chỗ ngay
+-- ==========================================================
+INSERT INTO ServiceAvailabilities (ServiceId, AvailabilityDate, StartTime, Price, TotalUnits, Status) VALUES
+(@SerId1, CAST(GETDATE() AS DATE), '14:00', 550000, 5, 'open'),
+(@SerId2, CAST(GETDATE() AS DATE), '22:00', 350000, 40, 'open'),
+(@SerId3, DATEADD(day, 1, GETDATE()), '08:00', 750000, 15, 'open');
+
+GO
+
+-- ==========================================================
+-- 1. TẠO THÊM NHÀ CUNG CẤP MỚI (Để nhìn danh sách Provider đa dạng)
+-- ==========================================================
+INSERT INTO Users (FullName, Email, PasswordHash, RoleId, IsActive) VALUES
+(N'Hà Nội Discovery', 'info@hanoitours.vn', CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', '123456'), 2), 3, 1),
+(N'Phú Quốc Ocean Group', 'booking@pqocean.com', CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', '123456'), 2), 3, 1),
+(N'Saigon Fast Travel', 'contact@saigonfast.vn', CONVERT(NVARCHAR(64), HASHBYTES('SHA2_256', '123456'), 2), 3, 1);
+
+DECLARE @ProvHanoi INT = (SELECT UserId FROM Users WHERE Email = 'info@hanoitours.vn');
+DECLARE @ProvPhuQuoc INT = (SELECT UserId FROM Users WHERE Email = 'booking@pqocean.com');
+DECLARE @ProvSaigon INT = (SELECT UserId FROM Users WHERE Email = 'contact@saigonfast.vn');
+
+INSERT INTO ServiceProviders (OwnerUserId, CompanyName, ContactEmail, IsVerified) VALUES
+(@ProvHanoi, N'Hà Nội Discovery Tours', 'info@hanoitours.vn', 1),
+(@ProvPhuQuoc, N'Pearl Island Resorts & Spas', 'booking@pqocean.com', 1),
+(@ProvSaigon, N'Saigon FastGo Transport', 'contact@saigonfast.vn', 1);
+
+-- ==========================================================
+-- 2. BỔ SUNG 15 DỊCH VỤ ĐA DẠNG
+-- ==========================================================
+DECLARE @Acc INT = (SELECT CategoryID FROM ServiceCategories WHERE ServiceTypeName = 'Accommodation');
+DECLARE @Tra INT = (SELECT CategoryID FROM ServiceCategories WHERE ServiceTypeName = 'Transport');
+DECLARE @Act INT = (SELECT CategoryID FROM ServiceCategories WHERE ServiceTypeName = 'Activity');
+
+DECLARE @PHanoi INT = (SELECT ProviderId FROM ServiceProviders WHERE CompanyName = N'Hà Nội Discovery Tours');
+DECLARE @PPQ INT = (SELECT ProviderId FROM ServiceProviders WHERE CompanyName = N'Pearl Island Resorts & Spas');
+DECLARE @PSG INT = (SELECT ProviderId FROM ServiceProviders WHERE CompanyName = N'Saigon FastGo Transport');
+
+-- --- NHÓM 1: MIỀN BẮC ---
+-- 1. Khách sạn (Hà Nội - Loc 15)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PHanoi, 15, N'Hanoi Old Quarter Hotel', N'Khách sạn mang phong cách cổ điển ngay trung tâm phố cổ.', @Acc, 'active', 4.5, N'32 Hàng Bè, Hoàn Kiếm');
+DECLARE @S1 INT = SCOPE_IDENTITY();
+
+-- 2. Du thuyền (Hạ Long - Loc 1)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PHanoi, 1, N'Heritage Cruise Binh Chuan', N'Trải nghiệm du thuyền 5 sao khám phá vẻ đẹp vịnh Hạ Long.', @Act, 'active', 4.9, N'Cảng Tàu Tuần Châu');
+DECLARE @S2 INT = SCOPE_IDENTITY();
+
+-- 3. Thủy phi cơ (Hạ Long - Loc 1)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PHanoi, 1, N'Hai Au Aviation Seaplane', N'Ngắm nhìn toàn cảnh vịnh Hạ Long từ trên cao trong 25 phút.', @Tra, 'active', 4.8, N'Cảng Tuần Châu');
+DECLARE @S3 INT = SCOPE_IDENTITY();
+
+-- 4. Tour Trekking (Sa Pa - Loc 6)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PHanoi, 6, N'Sapa Trekking Fansipan', N'Chinh phục nóc nhà Đông Dương cùng hướng dẫn viên bản địa.', @Act, 'active', 4.7, N'Thị xã Sa Pa');
+DECLARE @S4 INT = SCOPE_IDENTITY();
+
+-- 5. Homestay (Ninh Bình - Loc 2)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PHanoi, 2, N'Trang An River View Homestay', N'Nằm sát dòng sông Ngô Đồng, view núi đá vôi tuyệt đẹp.', @Acc, 'active', 4.6, N'Trường Yên, Hoa Lư');
+DECLARE @S5 INT = SCOPE_IDENTITY();
+
+-- --- NHÓM 2: MIỀN TRUNG ---
+-- 6. Resort (Đà Nẵng - Loc 14)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PPQ, 14, N'InterContinental Sun Peninsula', N'Khu nghỉ dưỡng sang trọng nhất thế giới tại bán đảo Sơn Trà.', @Acc, 'active', 5.0, N'Bán đảo Sơn Trà, Đà Nẵng');
+DECLARE @S6 INT = SCOPE_IDENTITY();
+
+-- 7. Tour Thuyền thúng (Hội An - Loc 4)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PPQ, 4, N'Cam Thanh Basket Boat Tour', N'Khám phá rừng dừa Bảy Mẫu và xem múa thuyền thúng.', @Act, 'active', 4.4, N'Rừng dừa Bảy Mẫu, Hội An');
+DECLARE @S7 INT = SCOPE_IDENTITY();
+
+-- 8. Lớp học nấu ăn (Huế - Loc 39)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PPQ, 39, N'Hue Royal Cooking Class', N'Học cách chế biến các món ăn cung đình Huế đặc sắc.', @Act, 'active', 4.7, N'Kim Long, TP. Huế');
+DECLARE @S8 INT = SCOPE_IDENTITY();
+
+-- 9. Xe máy cho thuê (Hà Giang - Loc 42)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PHanoi, 42, N'Ha Giang Loop Motorbike', N'Dịch vụ cho thuê xe cào cào và xe số leo dốc cực khỏe.', @Tra, 'active', 4.5, N'TP. Hà Giang');
+DECLARE @S9 INT = SCOPE_IDENTITY();
+
+-- --- NHÓM 3: MIỀN NAM ---
+-- 10. Villa biển (Phú Quốc - Loc 10)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PPQ, 10, N'JW Marriott Emerald Bay', N'Kiến trúc đại học giả tưởng độc bản bên bãi Khem.', @Acc, 'active', 4.9, N'Bãi Khem, Phú Quốc');
+DECLARE @S10 INT = SCOPE_IDENTITY();
+
+-- 11. Tour Cano 4 đảo (Phú Quốc - Loc 10)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PPQ, 10, N'Phu Quoc 4 Islands Tour', N'Đi cano khám phá Hòn Móng Tay, Hòn Gầm Ghì, Hòn Mây Rút.', @Act, 'active', 4.8, N'Cảng An Thới');
+DECLARE @S11 INT = SCOPE_IDENTITY();
+
+-- 12. Vespa Tour (Sài Gòn - Loc 16)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PSG, 16, N'Saigon After Dark By Vespa', N'Ngắm Sài Gòn về đêm và thưởng thức street food bằng xe Vespa cổ.', @Act, 'active', 4.8, N'Quận 1, TP. HCM');
+DECLARE @S12 INT = SCOPE_IDENTITY();
+
+-- 13. Xe Limousine VIP (Đà Lạt - Loc 5)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PSG, 5, N'Amazing Limousine Dalat', N'Dòng xe phòng nằm cao cấp tuyến Sài Gòn - Đà Lạt.', @Tra, 'active', 4.6, N'Bến xe Miền Đông / Đà Lạt');
+DECLARE @S13 INT = SCOPE_IDENTITY();
+
+-- 14. Glamping (Đà Lạt - Loc 5)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PSG, 5, N'Twin Beans Farm Glamping', N'Cắm trại sang chảnh giữa nông trại cà phê thơm ngát.', @Acc, 'active', 4.7, N'Lạc Dương, Đà Lạt');
+DECLARE @S14 INT = SCOPE_IDENTITY();
+
+-- 15. Tour Địa đạo (Củ Chi - Loc 32)
+INSERT INTO Services (ProviderId, LocationId, Name, Description, CategoryID, Status, AverageRating, Address)
+VALUES (@PSG, 32, N'Cu Chi Tunnels Half Day', N'Khám phá hệ thống phòng thủ ngầm kỳ vĩ của Việt Nam.', @Act, 'active', 4.5, N'Củ Chi, TP. HCM');
+DECLARE @S15 INT = SCOPE_IDENTITY();
+
+-- ==========================================================
+-- 3. HÌNH ẢNH MINH HỌA (Mỗi cái 1 ảnh cho đẹp)
+-- ==========================================================
+INSERT INTO ServiceImages (ServiceId, ImageUrl, Caption, DisplayOrder) VALUES
+(@S1, 'https://images.unsplash.com/photo-1555854816-808226a3f14b', N'Phòng ngủ phố cổ', 1),
+(@S2, 'https://images.unsplash.com/photo-1528127269322-539801943592', N'Du thuyền Heritage', 1),
+(@S3, 'https://images.unsplash.com/photo-1534067783941-51c9c23ecefd', N'Ngắm vịnh từ trên cao', 1),
+(@S6, 'https://images.unsplash.com/photo-1571896349842-33c89424de2d', N'Resort đẳng cấp', 1),
+(@S10, 'https://images.unsplash.com/photo-1540541338287-41700207dee6', N'Khu nghỉ dưỡng bãi Khem', 1),
+(@S14, 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4', N'Lều trại giữa rừng thông', 1);
+
+-- ==========================================================
+-- 4. AVAILABILITY (Để user có thể đặt ngay các dịch vụ này)
+-- ==========================================================
+INSERT INTO ServiceAvailabilities (ServiceId, AvailabilityDate, StartTime, Price, TotalUnits, Status)
+SELECT ServiceId, CAST(GETDATE() AS DATE), '08:00', 1200000, 20, 'open' FROM Services WHERE ServiceId BETWEEN @S1 AND @S15;
+
+GO
